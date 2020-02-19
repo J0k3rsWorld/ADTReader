@@ -5,16 +5,17 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
+import filereader.files.util.Chunk;
 import filereader.util.maths.Vector3f;
 
 public class ReaderUtil {
 
-	public static List<String> readStringChunk(ByteBuffer buff, int chunksDataStart, int chunkSize) {
+	public static List<String> readStringChunk(ByteBuffer buff, Chunk cnk) {
 
 		List<String> data = new ArrayList<String>();
 		StringBuilder str = new StringBuilder();
 
-		for (int i = chunksDataStart; i < chunksDataStart + chunkSize; i++) {
+		for (int i = cnk.getPosition(); i < cnk.getPosition() + cnk.getSize(); i++) {
 			if (buff.get(i) != 0) {
 				str.append((char) buff.get(i));
 			} else {
@@ -105,6 +106,7 @@ public class ReaderUtil {
 		ByteBuffer buff = ByteBuffer.allocate(allBytes.length);
 		buff.put(allBytes);
 		buff.order(ByteOrder.LITTLE_ENDIAN);
+		buff.position(0);
 		return buff;
 	}
 

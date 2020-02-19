@@ -9,14 +9,19 @@ import filereader.files.chunks.MCNR;
 import filereader.files.chunks.MCSE;
 import filereader.files.chunks.MCVT;
 
-public class MCNKEntry {
-	public MCNKheader header;
-    public MCVT mcvt;
-    public MCNR mcnr;
-    public MCLY mcly;
-    public MCCV mccv;
-    public MCSE mcse;
-    public MCBB[] mcbb;
+public class MCNKEntry extends Chunk{
+	private MCNKheader header;
+    private MCVT mcvt;
+    private MCNR mcnr;
+    private MCLY mcly;
+    private MCCV mccv;
+    private MCSE mcse;
+    private MCBB[] mcbb;
+
+    public MCNKEntry(int magic, int size, int position) {
+    	super(magic, size, position);
+    	// TODO Auto-generated constructor stub
+    }
 
     public MCNKheader getHeader() {
 		return header;

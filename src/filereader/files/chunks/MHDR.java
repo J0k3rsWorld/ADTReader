@@ -1,22 +1,29 @@
 package filereader.files.chunks;
 
-public class MHDR {
-    public int flags;
-    public int ofsMCIN;
-    public int ofsMTEX;
-    public int ofsMMDX;
-    public int ofsMMID;
-    public int ofsMWMO;
-    public int ofsMWID;
-    public int ofsMDDF;
-    public int ofsMODF;
-    public int ofsMFBO;
-    public int ofsMH2O;
-    public int ofsMTXF;
-    public int unk1;
-    public int unk2;
-    public int unk3;
-    public int unk4;
+import filereader.files.util.Chunk;
+
+public class MHDR extends Chunk{
+    private int flags;
+    private int ofsMCIN;
+    private int ofsMTEX;
+    private int ofsMMDX;
+    private int ofsMMID;
+    private int ofsMWMO;
+    private int ofsMWID;
+    private int ofsMDDF;
+    private int ofsMODF;
+    private int ofsMFBO;
+    private int ofsMH2O;
+    private int ofsMTXF;
+    private int unk1;
+    private int unk2;
+    private int unk3;
+    private int unk4;
+    
+    public MHDR(int magic, int size, int position) {
+    	super(magic, size, position);
+    }
+    
 	public int getFlags() {
 		return flags;
 	}

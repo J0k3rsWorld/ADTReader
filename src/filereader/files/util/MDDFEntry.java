@@ -3,23 +3,23 @@ package filereader.files.util;
 import filereader.util.maths.Vector3f;
 
 public class MDDFEntry {
-    public long nameID;
-    public long uniqueId;
-    public Vector3f position;
-    public Vector3f rotation;
-    public short scale;
-    public short flags;
+    private int nameID;
+    private int uniqueId;
+    private Vector3f position;
+    private Vector3f rotation;
+    private int scale;
+    private int flags;
     
-	public long getNameID() {
+	public int getNameID() {
 		return nameID;
 	}
-	public void setNameID(long mmidEntry) {
+	public void setNameID(int mmidEntry) {
 		this.nameID = mmidEntry;
 	}
-	public long getUniqueId() {
+	public int getUniqueId() {
 		return uniqueId;
 	}
-	public void setUniqueId(long uniqueId) {
+	public void setUniqueId(int uniqueId) {
 		this.uniqueId = uniqueId;
 	}
 	public Vector3f getPosition() {
@@ -34,16 +34,16 @@ public class MDDFEntry {
 	public void setRotation(Vector3f rotation) {
 		this.rotation = rotation;
 	}
-	public short getScale() {
+	public int getScale() {
 		return scale;
 	}
-	public void setScale(short scale) {
+	public void setScale(int scale) {
 		this.scale = scale;
 	}
-	public short getFlags() {
+	public int getFlags() {
 		return flags;
 	}
-	public void setFlags(short flags) {
+	public void setFlags(int flags) {
 		this.flags = flags;
 	}
 }

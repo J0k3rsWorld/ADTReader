@@ -1,6 +1,7 @@
 package filereader.files.util;
 
-public class MCINEntry {
+public class MCINEntry{
+	
 	private int address; //absolute offset
 	private int size;	//the size of MCNK, this is reffering to
 	private int flags;  // always 0, only set in client, FLAG_LOADED = 1

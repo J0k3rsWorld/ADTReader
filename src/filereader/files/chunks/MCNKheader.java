@@ -2,8 +2,8 @@ package filereader.files.chunks;
 
 import filereader.util.maths.Vector3f;
 
-public class MCNKheader {
-    private int flags;
+public class MCNKheader{
+	private int flags;
     private int indexX;
     private int indexY;
     private int nLayers;
@@ -29,7 +29,7 @@ public class MCNKheader {
     private int nSndEmiters;
     private int ofsMCLQ;
     private int sizeLiquid;
-    private Vector3f position;
+    private Vector3f vecPosition;
     private int ofsMCCV;
     private int props;
     private int effectId;
@@ -190,11 +190,11 @@ public class MCNKheader {
 	public void setSizeLiquid(int sizeLiquid) {
 		this.sizeLiquid = sizeLiquid;
 	}
-	public Vector3f getPosition() {
-		return position;
+	public Vector3f getVecPosition() {
+		return vecPosition;
 	}
-	public void setPosition(Vector3f position) {
-		this.position = position;
+	public void setVecPosition(Vector3f vecPosition) {
+		this.vecPosition = vecPosition;
 	}
 	public int getOfsMCCV() {
 		return ofsMCCV;

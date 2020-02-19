@@ -9,11 +9,12 @@ import filereader.files.chunks.MMDX;
 import filereader.files.chunks.MMID;
 import filereader.files.chunks.MODF;
 import filereader.files.chunks.MTEX;
+import filereader.files.chunks.MVER;
 import filereader.files.chunks.MWID;
 import filereader.files.chunks.MWMO;
 
 public class ADT335 {
-    private int mver;
+    private MVER mver;
     private MHDR mhdr;
     private MCIN mcin; // = new MCIN[256];
     private MTEX mtex;
@@ -26,10 +27,10 @@ public class ADT335 {
     private MH2O mh2o; //skip for now, don't want water right now :'D
     private MCNK mcnk;
     
-    public int getMver() {
+    public MVER getMver() {
 		return mver;
 	}
-	public void setMver(int mver) {
+	public void setMver(MVER mver) {
 		this.mver = mver;
 	}
 	public MHDR getMhdr() {

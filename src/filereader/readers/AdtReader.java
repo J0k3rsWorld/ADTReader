@@ -1,8 +1,6 @@
 package filereader.readers;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -23,14 +21,20 @@ import filereader.files.chunks.MMDX;
 import filereader.files.chunks.MMID;
 import filereader.files.chunks.MODF;
 import filereader.files.chunks.MTEX;
+import filereader.files.chunks.MVER;
 import filereader.files.chunks.MWID;
 import filereader.files.chunks.MWMO;
 import filereader.files.util.MCINEntry;
 import filereader.files.util.MCLYEntry;
 import filereader.files.util.MCNKEntry;
 import filereader.files.util.MDDFEntry;
+import filereader.files.util.MH2OAttribute;
+import filereader.files.util.MH2OHeaderEntry;
+import filereader.files.util.MH2OInstance;
+import filereader.files.util.MH2OVertexData;
 import filereader.files.util.MODFEntry;
 import filereader.readers.util.ReaderUtil;
+import filereader.util.maths.Vector3f;
 
 public class AdtReader {
 	/*
@@ -63,138 +67,121 @@ public class AdtReader {
 		adt.setMwid(readMWID(dataBuff, adt.getMhdr()));
 		adt.setMddf(readMDDF(dataBuff, adt.getMhdr()));
 		adt.setModf(readMODF(dataBuff, adt.getMhdr()));
-		adt.setMh2o(readMH2O(dataBuff, adt.getMhdr())); // TODO
+//		adt.setMh2o(readMH2O(dataBuff, adt.getMhdr())); // TODO
 		adt.setMcnk(readMCNK(dataBuff, adt.getMcin()));
 
 		return adt;
 	}
 
-	public static int readMVER(ByteBuffer dataBuff) {
-		return ReaderUtil.readInt4Bytes(dataBuff, 8);
+	public static MVER readMVER(ByteBuffer dataBuff) {
+		return new MVER(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position(), dataBuff.getInt());
 	}
 
 	public static MHDR readMHDR(ByteBuffer dataBuff) {
-		MHDR mhdr = new MHDR();
+		MHDR mhdr = new MHDR(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 
-		mhdr.setFlags(ReaderUtil.readInt4Bytes(dataBuff, 0x14));
-		mhdr.setOfsMCIN(ReaderUtil.readInt4Bytes(dataBuff, 0x18));
-		mhdr.setOfsMTEX(ReaderUtil.readInt4Bytes(dataBuff, 0x1C));
-		mhdr.setOfsMMDX(ReaderUtil.readInt4Bytes(dataBuff, 0x20));
-		mhdr.setOfsMMID(ReaderUtil.readInt4Bytes(dataBuff, 0x24));
-		mhdr.setOfsMWMO(ReaderUtil.readInt4Bytes(dataBuff, 0x28));
-		mhdr.setOfsMWID(ReaderUtil.readInt4Bytes(dataBuff, 0x2C));
-		mhdr.setOfsMDDF(ReaderUtil.readInt4Bytes(dataBuff, 0x30));
-		mhdr.setOfsMODF(ReaderUtil.readInt4Bytes(dataBuff, 0x34));
-		mhdr.setOfsMFBO(ReaderUtil.readInt4Bytes(dataBuff, 0x38));
-		mhdr.setOfsMH2O(ReaderUtil.readInt4Bytes(dataBuff, 0x3C));
-		mhdr.setOfsMTXF(ReaderUtil.readInt4Bytes(dataBuff, 0x40));
-		mhdr.setUnk1(ReaderUtil.readInt4Bytes(dataBuff, 0x44));
-		mhdr.setUnk2(ReaderUtil.readInt4Bytes(dataBuff, 0x48));
-		mhdr.setUnk3(ReaderUtil.readInt4Bytes(dataBuff, 0x4C));
-		mhdr.setUnk4(ReaderUtil.readInt4Bytes(dataBuff, 0x50));
+		mhdr.setFlags(dataBuff.getInt());
+		mhdr.setOfsMCIN(dataBuff.getInt());
+		mhdr.setOfsMTEX(dataBuff.getInt());
+		mhdr.setOfsMMDX(dataBuff.getInt());
+		mhdr.setOfsMMID(dataBuff.getInt());
+		mhdr.setOfsMWMO(dataBuff.getInt());
+		mhdr.setOfsMWID(dataBuff.getInt());
+		mhdr.setOfsMDDF(dataBuff.getInt());
+		mhdr.setOfsMODF(dataBuff.getInt());
+		mhdr.setOfsMFBO(dataBuff.getInt());
+		mhdr.setOfsMH2O(dataBuff.getInt());
+		mhdr.setOfsMTXF(dataBuff.getInt());
+		mhdr.setUnk1(dataBuff.getInt());
+		mhdr.setUnk2(dataBuff.getInt());
+		mhdr.setUnk3(dataBuff.getInt());
+		mhdr.setUnk4(dataBuff.getInt());
 
 		return mhdr;
 	}
 
-	public static MCIN readMCIN(ByteBuffer dataBuff, MHDR mhdr) {
-		MCIN mcin = new MCIN();
+	public static MCIN readMCIN(ByteBuffer dataBuff, MHDR cnk) {
+		dataBuff.position(cnk.getPosition() + cnk.getOfsMCIN());
+		MCIN mcin = new MCIN(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 		MCINEntry entry;
-		int counter = 0;
-		int mcinDataStart = 0x14 + mhdr.getOfsMCIN() + 8;
 
 		for (int i = 0; i < 256; i++) {
 			entry = new MCINEntry();
 
-			entry.setAddress(ReaderUtil.readInt4Bytes(dataBuff, mcinDataStart + counter));
-			entry.setSize(ReaderUtil.readInt4Bytes(dataBuff, mcinDataStart + 4 + counter));
-			entry.setFlags(ReaderUtil.readInt4Bytes(dataBuff, mcinDataStart + 8 + counter));
-			entry.setAsyncID(ReaderUtil.readInt4Bytes(dataBuff, mcinDataStart + 12 + counter));
+			entry.setAddress(dataBuff.getInt());
+			entry.setSize(dataBuff.getInt());
+			entry.setFlags(dataBuff.getInt());
+			entry.setAsyncID(dataBuff.getInt());
 
 			mcin.getEntries().add(entry);
-
-			counter += 16;
 		}
 		return mcin;
 	}
 
 	public static MTEX readMTEX(ByteBuffer dataBuff, MHDR mhdr) {
-		MTEX mtex = new MTEX();
-		int mtexDataStart = 0x14 + mhdr.getOfsMTEX() + 8;
-		int mtexSize = ReaderUtil.readInt4Bytes(dataBuff, mtexDataStart - 4);
+		dataBuff.position(mhdr.getPosition() + mhdr.getOfsMTEX());
+		MTEX mtex = new MTEX(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 
-		mtex.setFilenames(ReaderUtil.readStringChunk(dataBuff, mtexDataStart, mtexSize));
+		mtex.setFilenames(ReaderUtil.readStringChunk(dataBuff, mtex));
 
 		return mtex;
 	}
 
 	public static MMDX readMMDX(ByteBuffer dataBuff, MHDR mhdr) {
-		MMDX mmdx = new MMDX();
-		int mmdxDataStart = 0x14 + mhdr.getOfsMMDX() + 8;
-		int mmdxSize = ReaderUtil.readInt4Bytes(dataBuff, mmdxDataStart - 4);
+		dataBuff.position(mhdr.getPosition() + mhdr.getOfsMMDX());
+		MMDX mmdx = new MMDX(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 
-		mmdx.setFilenames(ReaderUtil.readStringChunk(dataBuff, mmdxDataStart, mmdxSize));
+		mmdx.setFilenames(ReaderUtil.readStringChunk(dataBuff, mmdx));
 
 		return mmdx;
 	}
 
 	public static MMID readMMID(ByteBuffer dataBuff, MHDR mhdr) {
-		MMID mmid = new MMID();
-		int mmidDataStart = 0x14 + mhdr.getOfsMMID() + 8;
-		int mmidSize = ReaderUtil.readInt4Bytes(dataBuff, mmidDataStart - 4);
+		dataBuff.position(mhdr.getPosition() + mhdr.getOfsMMID());
+		MMID mmid = new MMID(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 
-		for (int i = 0; i < mmidSize; i += 4) {
-			mmid.getEntries().add(ReaderUtil.readInt4Bytes(dataBuff, i + mmidDataStart));
+		for (int i = 0; i < mmid.getSize(); i += 4) {
+			mmid.getEntries().add(dataBuff.getInt());
 		}
 
 		return mmid;
 	}
 
 	public static MWMO readMWMO(ByteBuffer dataBuff, MHDR mhdr) {
-		MWMO mwmo = new MWMO();
-		int mwmoDataStart = 0x14 + mhdr.getOfsMWMO() + 8;
-		int mwmoSize = ReaderUtil.readInt4Bytes(dataBuff, mwmoDataStart - 4);
+		dataBuff.position(mhdr.getPosition() + mhdr.getOfsMWMO());
+		MWMO mwmo = new MWMO(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 
-		mwmo.setFilenames(ReaderUtil.readStringChunk(dataBuff, mwmoDataStart, mwmoSize));
+		mwmo.setFilenames(ReaderUtil.readStringChunk(dataBuff, mwmo));
 
 		return mwmo;
 	}
 
 	public static MWID readMWID(ByteBuffer dataBuff, MHDR mhdr) {
-		MWID mwid = new MWID();
-		int mwidDataStart = 0x14 + mhdr.getOfsMWID() + 8;
-		int mwidSize = ReaderUtil.readInt4Bytes(dataBuff, mwidDataStart - 4);
+		dataBuff.position(mhdr.getPosition() + mhdr.getOfsMWID());
+		MWID mwid = new MWID(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 
-		for (int i = 0; i < mwidSize; i += 4) {
-			mwid.getEntries().add(ReaderUtil.readInt4Bytes(dataBuff, i + mwidDataStart));
+		for (int i = 0; i < mwid.getSize(); i += 4) {
+			mwid.getEntries().add(dataBuff.getInt());
 		}
 
 		return mwid;
 	}
 
 	public static MDDF readMDDF(ByteBuffer dataBuff, MHDR mhdr) {
-		MDDF mddf = new MDDF();
-		int mddfDataStart = 0x14 + mhdr.getOfsMDDF() + 8;
-		int mddfSize = ReaderUtil.readInt4Bytes(dataBuff, mddfDataStart - 4);
+		dataBuff.position(mhdr.getPosition() + mhdr.getOfsMDDF());
+		MDDF mddf = new MDDF(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 
 		MDDFEntry mddfEntry;
 
-		for (int i = 0; i < mddfSize; i += 0x24) {
+		for (int i = 0; i < mddf.getSize(); i += 0x24) {
 			mddfEntry = new MDDFEntry();
 
-			int offset = i;
-
-			mddfEntry.setNameID(ReaderUtil.readInt4Bytes(dataBuff, mddfDataStart + offset));
-			offset += 4;
-			mddfEntry.setUniqueId(ReaderUtil.readInt4Bytes(dataBuff, mddfDataStart + offset));
-			offset += 4;
-			mddfEntry.setPosition(ReaderUtil.createVector3f(dataBuff, mddfDataStart + offset));
-			offset += 12;
-			mddfEntry.setRotation(ReaderUtil.createVector3f(dataBuff, mddfDataStart + offset));
-			offset += 12;
-			mddfEntry.setScale(ReaderUtil.readInt2Bytes(dataBuff, mddfDataStart + offset));
-			offset += 2;
-			mddfEntry.setFlags(ReaderUtil.readInt2Bytes(dataBuff, mddfDataStart + offset));
-			offset += 2;
+			mddfEntry.setNameID(dataBuff.getInt());
+			mddfEntry.setUniqueId(dataBuff.getInt());
+			mddfEntry.setPosition(new Vector3f(dataBuff.getFloat(), dataBuff.getFloat(), dataBuff.getFloat()));
+			mddfEntry.setRotation(new Vector3f(dataBuff.getFloat(), dataBuff.getFloat(), dataBuff.getFloat()));
+			mddfEntry.setScale(dataBuff.getInt());
+			mddfEntry.setFlags(dataBuff.getInt());
 
 			mddf.getEntries().add(mddfEntry);
 		}
@@ -203,30 +190,23 @@ public class AdtReader {
 	}
 
 	public static MODF readMODF(ByteBuffer dataBuff, MHDR mhdr) {
-		MODF modf = new MODF();
-		int modfDataStart = 0x14 + mhdr.getOfsMODF() + 8;
-		int modfSize = ReaderUtil.readInt4Bytes(dataBuff, modfDataStart - 4);
+		dataBuff.position(mhdr.getPosition() + mhdr.getOfsMODF());
+		MODF modf = new MODF(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 
 		MODFEntry modfEntry;
 
-		for (int i = 0; i < modfSize; i += 0x40) {
+		for (int i = 0; i < modf.getSize(); i += 0x40) {
 			modfEntry = new MODFEntry();
 
-			int offset = i;
+			modfEntry.setMwidEntry(dataBuff.getInt());
+			modfEntry.setUniqueId(dataBuff.getInt());
+			modfEntry.setPosition(new Vector3f(dataBuff.getFloat(), dataBuff.getFloat(), dataBuff.getFloat()));
+			modfEntry.setRotation(new Vector3f(dataBuff.getFloat(), dataBuff.getFloat(), dataBuff.getFloat()));
+			modfEntry.setLowerBounds(new Vector3f(dataBuff.getFloat(), dataBuff.getFloat(), dataBuff.getFloat()));
+			modfEntry.setUpperBounds(new Vector3f(dataBuff.getFloat(), dataBuff.getFloat(), dataBuff.getFloat()));
+			modfEntry.setDoodadSet(dataBuff.getInt());
 
-			modfEntry.setMwidEntry(ReaderUtil.readInt4Bytes(dataBuff, modfDataStart + offset));
-			offset += 4;
-			modfEntry.setUniqueId(ReaderUtil.readInt4Bytes(dataBuff, modfDataStart + offset));
-			offset += 4;
-			modfEntry.setPosition(ReaderUtil.createVector3f(dataBuff, modfDataStart + offset));
-			offset += 12;
-			modfEntry.setRotation(ReaderUtil.createVector3f(dataBuff, modfDataStart + offset));
-			offset += 12;
-			modfEntry.setLowerBounds(ReaderUtil.createVector3f(dataBuff, modfDataStart + offset));
-			offset += 12;
-			modfEntry.setUpperBounds(ReaderUtil.createVector3f(dataBuff, modfDataStart + offset));
-			offset += 12;
-			modfEntry.setDoodadSet(ReaderUtil.readInt4Bytes(dataBuff, modfDataStart + offset));
+			dataBuff.getInt(); // used to set the position, after the doodadset are 4 unknown or unsused bytes
 
 			modf.getEntries().add(modfEntry);
 		}
@@ -237,7 +217,60 @@ public class AdtReader {
 		/*
 		 * BIG TODO
 		 */
-		return null;
+
+		dataBuff.position(mhdr.getPosition() + mhdr.getOfsMH2O());
+		MH2O mh20 = new MH2O(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
+
+		for (int i = 0; i < 256; i++) {
+			mh20.getMh2oHdrEntries().add(new MH2OHeaderEntry(dataBuff.getInt(), dataBuff.getInt(), dataBuff.getInt()));
+		}
+
+		for (int i = 0; i < 256; i++) {
+			MH2OHeaderEntry header = mh20.getMh2oHdrEntries().get(i);
+			MH2OInstance mh2oInstance;
+
+			if (header.getOffsetInstances() != 0) {
+				dataBuff.position(mh20.getPosition() + header.getOffsetInstances());
+
+				mh2oInstance = new MH2OInstance();
+
+				mh2oInstance.setLiquidType(dataBuff.getShort());
+				mh2oInstance.setLiquidObjectOrLVF(dataBuff.getShort());
+				mh2oInstance.setMinHeight(dataBuff.getFloat());
+				mh2oInstance.setMaxHeight(dataBuff.getFloat());
+				mh2oInstance.setxOffset(dataBuff.get());
+				mh2oInstance.setyOffset(dataBuff.get());
+				mh2oInstance.setWidth(dataBuff.get());
+				mh2oInstance.setHeight(dataBuff.get());
+				mh2oInstance.setOffsetExistsBitmap(dataBuff.getInt());
+				mh2oInstance.setOffsetVertexData(dataBuff.getInt());
+
+				mh20.getMh2oInstances().add(mh2oInstance);
+			}
+		}
+
+		for (int i = 0; i < 256; i++) {
+			MH2OHeaderEntry header = mh20.getMh2oHdrEntries().get(i);
+
+			if (header.getOffsetAttributes() != 0) {
+
+				dataBuff.position(mh20.getPosition() + header.getOffsetAttributes());
+
+				for (int j = 0; j < header.getLayerCount(); j++) {
+					mh20.getMh2oAttribs().add(new MH2OAttribute(dataBuff.getInt(), dataBuff.getInt()));
+				}
+			}
+		}
+
+		for (int i = 0; i < 256; i++) {
+			MH2OHeaderEntry header = mh20.getMh2oHdrEntries().get(i);
+
+			if (header.getLayerCount() != 0) {
+
+			}
+		}
+
+		return mh20;
 	}
 
 	public static MCNK readMCNK(ByteBuffer dataBuff, MCIN mcin) {
@@ -246,13 +279,14 @@ public class AdtReader {
 		MCNK mcnk = new MCNK();
 
 		for (MCINEntry mcnkEntry : mcin.getEntries()) {
-			mcnk.entries.add(readMCNKEntry(dataBuff, mcnkEntry));
+			mcnk.getEntries().add(readMCNKEntry(dataBuff, mcnkEntry));
 		}
 		return mcnk;
 	}
 
 	public static MCNKEntry readMCNKEntry(ByteBuffer dataBuff, MCINEntry mcnkEntry/* , int offset */) {
-		MCNKEntry cnk = new MCNKEntry();
+		dataBuff.position(mcnkEntry.getAddress());
+		MCNKEntry cnk = new MCNKEntry(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 
 		cnk.setHeader(readMCNKHeader(dataBuff, mcnkEntry));
 		cnk.setMcvt(readMCVT(dataBuff, mcnkEntry, cnk.getHeader()));
@@ -268,22 +302,57 @@ public class AdtReader {
 		return cnk;
 	}
 
+	public static MCNKheader readMCNKHeader(ByteBuffer dataBuff, MCINEntry mcnkEntry) {
+		MCNKheader mcnkHeader = new MCNKheader();
+
+		mcnkHeader.setFlags(dataBuff.getInt());
+		mcnkHeader.setIndexX(dataBuff.getInt());
+		mcnkHeader.setIndexY(dataBuff.getInt());
+		mcnkHeader.setnLayers(dataBuff.getInt());
+		mcnkHeader.setnDoodadRefs(dataBuff.getInt());
+		mcnkHeader.setOfsMCVT(dataBuff.getInt());
+		mcnkHeader.setOfsMCNR(dataBuff.getInt());
+		mcnkHeader.setOfsMCLY(dataBuff.getInt());
+		mcnkHeader.setOfsMCRF(dataBuff.getInt());
+		mcnkHeader.setOfsMCAL(dataBuff.getInt());
+		mcnkHeader.setSizeAlpha(dataBuff.getInt());
+		mcnkHeader.setOfsMCSH(dataBuff.getInt());
+		mcnkHeader.setSizeShadows(dataBuff.getInt());
+		mcnkHeader.setAreaID(dataBuff.getInt());
+		mcnkHeader.setnMapObjRefs(dataBuff.getInt());
+		mcnkHeader.setHoles(dataBuff.getInt());
+		mcnkHeader.setUnk1(dataBuff.getInt());
+		mcnkHeader.setUnk2(dataBuff.getInt());
+		mcnkHeader.setUnk3(dataBuff.getInt());
+		mcnkHeader.setUnk4(dataBuff.getInt());
+		mcnkHeader.setPredTex(dataBuff.getInt());
+		mcnkHeader.setNoEffectDoodad(dataBuff.getInt());
+		mcnkHeader.setOfsMCSE(dataBuff.getInt());
+		mcnkHeader.setnSndEmiters(dataBuff.getInt());
+		mcnkHeader.setOfsMCLQ(dataBuff.getInt());
+		mcnkHeader.setSizeLiquid(dataBuff.getInt());
+		mcnkHeader.setVecPosition(new Vector3f(dataBuff.getFloat(), dataBuff.getFloat(), dataBuff.getFloat()));
+		mcnkHeader.setOfsMCCV(dataBuff.getInt());
+		mcnkHeader.setProps(dataBuff.getInt());
+		mcnkHeader.setEffectId(dataBuff.getInt());
+		return mcnkHeader;
+	}
+	
 	private static MCLY readMCLY(ByteBuffer dataBuff, MCINEntry mcnkEntry, MCNKheader header) {
-		MCLY mcly = new MCLY();
-		int mclyDataStart = mcnkEntry.getAddress() + header.getOfsMCLY() + 8;
-		int mclySize = ReaderUtil.readInt4Bytes(dataBuff, mclyDataStart - 4);
+		dataBuff.position(mcnkEntry.getAddress() + header.getOfsMCLY());
+		MCLY mcly = new MCLY(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
 
 		MCLYEntry mclyEntry;
 
-		for (int i = 0; i < mclySize; i += 0x10) {
+		for (int i = 0; i < mcly.getSize(); i += 0x10) {
 			mclyEntry = new MCLYEntry();
 
 			int offset = i;
 
-			mclyEntry.setTextureId(ReaderUtil.readInt4Bytes(dataBuff, mclyDataStart + offset + 0));
-			mclyEntry.setFlags(ReaderUtil.readInt4Bytes(dataBuff, mclyDataStart + offset + 4));
-			mclyEntry.setOfsAlphaMap(ReaderUtil.readInt4Bytes(dataBuff, mclyDataStart + offset + 8));
-			mclyEntry.setDetailTextureID(ReaderUtil.readInt4Bytes(dataBuff, mclyDataStart + offset + 12));
+			mclyEntry.setTextureId(dataBuff.getInt());
+			mclyEntry.setFlags(dataBuff.getInt());
+			mclyEntry.setOfsAlphaMap(dataBuff.getInt());
+			mclyEntry.setDetailTextureID(dataBuff.getInt());
 
 			mcly.getEntries().add(mclyEntry);
 		}
@@ -292,76 +361,42 @@ public class AdtReader {
 	}
 
 	private static MCNR readMCNR(ByteBuffer dataBuff, MCINEntry mcnkEntry, MCNKheader header) {
-		MCNR mcnr = new MCNR();
-		dataBuff.position(mcnkEntry.getAddress() + header.getOfsMCNR() + 8);
+		
+		dataBuff.position(mcnkEntry.getAddress() + header.getOfsMCNR());
+		
+		MCNR mcnr = new MCNR(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
+
 		byte b;
 		for (int i = 0; i < 145; i++) {
-
-			b = dataBuff.get();
-			(mcnr.getNormal_0())[i] = b & 0xFF;
-			b = dataBuff.get();
-			(mcnr.getNormal_1())[i] = b & 0xFF;
-			b = dataBuff.get();
-			(mcnr.getNormal_2())[i] = b & 0xFF;
+			(mcnr.getNormal_0())[i] = dataBuff.get();
+			(mcnr.getNormal_1())[i] = dataBuff.get();
+			(mcnr.getNormal_2())[i] = dataBuff.get();
+//			b = dataBuff.get();
+//			(mcnr.getNormal_0())[i] = b & 0xFF;
+//			b = dataBuff.get();
+//			(mcnr.getNormal_1())[i] = b & 0xFF;
+//			b = dataBuff.get();
+//			(mcnr.getNormal_2())[i] = b & 0xFF;
 		}
 		return mcnr;
 	}
 
 	private static MCVT readMCVT(ByteBuffer dataBuff, MCINEntry mcnkEntry, MCNKheader header) {
-		MCVT mcvt = new MCVT();
-		int counterVert = 0;
+		dataBuff.position(mcnkEntry.getAddress() + header.getOfsMCVT());
+		MCVT mcvt = new MCVT(dataBuff.getInt(), dataBuff.getInt(), dataBuff.position());
+		
 		for (int i = 0; i < 145; i++) {
-			mcvt.getVertices().add(ReaderUtil.readFloat4Bytes(dataBuff,
-					mcnkEntry.getAddress() + header.getOfsMCVT() + 8 + counterVert));
-			counterVert += 4;
+			mcvt.getVertices().add(dataBuff.getFloat());
 		}
 		return mcvt;
-	}
-
-	public static MCNKheader readMCNKHeader(ByteBuffer dataBuff, MCINEntry mcnkEntry) {
-		MCNKheader mcnkHeader = new MCNKheader();
-
-		int mcnkEntryDataStart = mcnkEntry.getAddress();
-
-		mcnkHeader.setFlags(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 8));
-		mcnkHeader.setIndexX(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 12));
-		mcnkHeader.setIndexY(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 16));
-		mcnkHeader.setnLayers(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 20));
-		mcnkHeader.setnDoodadRefs(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 24));
-		mcnkHeader.setOfsMCVT(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 28));
-		mcnkHeader.setOfsMCNR(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 32));
-		mcnkHeader.setOfsMCLY(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 36));
-		mcnkHeader.setOfsMCRF(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 40));
-		mcnkHeader.setOfsMCAL(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 44));
-		mcnkHeader.setSizeAlpha(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 48));
-		mcnkHeader.setOfsMCSH(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 52));
-		mcnkHeader.setSizeShadows(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 56));
-		mcnkHeader.setAreaID(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 60));
-		mcnkHeader.setnMapObjRefs(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 64));
-		mcnkHeader.setHoles(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 68));
-		mcnkHeader.setUnk1(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 72));
-		mcnkHeader.setUnk2(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 76));
-		mcnkHeader.setUnk3(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 80));
-		mcnkHeader.setUnk4(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 84));
-		mcnkHeader.setPredTex(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 88));
-		mcnkHeader.setNoEffectDoodad(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 92));
-		mcnkHeader.setOfsMCSE(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 96));
-		mcnkHeader.setnSndEmiters(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 100));
-		mcnkHeader.setOfsMCLQ(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 104));
-		mcnkHeader.setSizeLiquid(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 108));
-		mcnkHeader.setPosition(ReaderUtil.createVector3f(dataBuff, mcnkEntryDataStart + 112));
-		mcnkHeader.setOfsMCCV(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 124));
-		mcnkHeader.setProps(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 128));
-		mcnkHeader.setEffectId(ReaderUtil.readInt4Bytes(dataBuff, mcnkEntryDataStart + 132));
-		return mcnkHeader;
 	}
 
 	public static ADT335 readOneAdt(String filePath) {
 		try {
 			long start = System.currentTimeMillis();
-			
+
 			ADT335 adt = AdtReader.createAdt(filePath);
-			
+
 			long end = System.currentTimeMillis();
 			System.out.println("Single ADT read in " + (end - start) + " ms");
 			return adt;
@@ -386,7 +421,7 @@ public class AdtReader {
 		}
 
 		long end = System.currentTimeMillis();
-		System.out.println("Many ADTs read in " + (end - start) + " ms");
+		System.out.println(adts.size() + " ADTs read in " + (end - start) + " ms");
 	}
 
 	public static void listFilesForFolder(File folder, List<String> adtNames) {

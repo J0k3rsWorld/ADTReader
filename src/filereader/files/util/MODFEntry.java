@@ -3,26 +3,26 @@ package filereader.files.util;
 import filereader.util.maths.Vector3f;
 
 public class MODFEntry {
-    public long mwidEntry;
-    public long uniqueId;
+    public int mwidEntry;
+    public int uniqueId;
     public Vector3f position;
     public Vector3f rotation;
     public Vector3f lowerBounds;
     public Vector3f upperBounds;
-    public MODFFlags flags;
+    public int flags;
     public int doodadSet;
     public int nameSet;
     public int scale;
-	public long getMwidEntry() {
+	public int getMwidEntry() {
 		return mwidEntry;
 	}
-	public void setMwidEntry(long mwidEntry) {
+	public void setMwidEntry(int mwidEntry) {
 		this.mwidEntry = mwidEntry;
 	}
-	public long getUniqueId() {
+	public int getUniqueId() {
 		return uniqueId;
 	}
-	public void setUniqueId(long uniqueId) {
+	public void setUniqueId(int uniqueId) {
 		this.uniqueId = uniqueId;
 	}
 	public Vector3f getPosition() {
@@ -49,10 +49,10 @@ public class MODFEntry {
 	public void setUpperBounds(Vector3f upperBounds) {
 		this.upperBounds = upperBounds;
 	}
-	public MODFFlags getFlags() {
+	public int getFlags() {
 		return flags;
 	}
-	public void setFlags(MODFFlags flags) {
+	public void setFlags(int flags) {
 		this.flags = flags;
 	}
 	public int getDoodadSet() {

@@ -3,9 +3,16 @@ package filereader.files.chunks;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MWID {
-	public List<Integer> entries = new ArrayList<Integer>();
+import filereader.files.util.Chunk;
 
+public class MWID extends Chunk{
+	private List<Integer> entries = new ArrayList<Integer>();
+
+	public MWID(int magic, int size, int position) {
+		super(magic, size, position);
+		entries = new ArrayList<Integer>();
+	}
+	
 	public List<Integer> getEntries() {
 		return entries;
 	}
